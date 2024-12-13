@@ -1,0 +1,1661 @@
+<<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Quiz Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@500&display=swap" rel="stylesheet">
+<style>
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #F7F9FC; /* Light Gray Background */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+.quiz-container, .quiz-type-selection {
+    width: 100%;
+    max-width: 600px;
+    background-color: #FFFFFF; /* White Background for Containers */
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h2 {
+    font-family: 'Montserrat', sans-serif; /* Montserrat for Headings */
+    color: #4A90E2; /* Primary Color */
+    margin-bottom: 20px;
+}
+
+.question {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333333; /* Dark Gray for Text */
+}
+
+.options {
+list-style-type: none;
+padding: 0;
+}
+
+.options li {
+    background-color: #4A90E2; /* Primary Color for Options */
+    color: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.options li:hover {
+    transform: scale(1.05);
+    background-color: #E94E77; /* Secondary Color on Hover */
+}
+
+.options li.correct {
+    background-color: #4CAF50; /* Green for Correct Answers */
+}
+
+.options li.incorrect {
+    background-color: #f44336; /* Red for Incorrect Answers */
+}
+
+button {
+    background-color: #E94E77; /* Secondary Color for Button */
+    color: white;
+    padding: 15px 20px;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    width: 100%; 
+    margin-top: 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s; /* Add transform for hover effect */
+}
+
+button:hover {
+    background-color: #F5A623; /* Accent Color on Hover */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.score-box, .timer-box {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: #E94E77; /* Secondary Color for Score and Timer Boxes */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 18px;
+   /* Ensure it appears above other elements */
+}
+
+.score-box {
+  z-index: 10; 
+}
+
+.timer-box {
+    left: 20px; /* Position timer box on the left */
+    top: 20px; /* Adjust this value to position the timer box */
+
+}
+
+.progress-bar {
+    width: 100%;
+    display: none; /* Hide the progress bar initially */
+    background-color: #e0e0e0; /* Light Gray for Progress Bar Background */
+    border-radius: 5px;
+    height: 20px;
+    margin-top: 20px;
+    overflow: hidden; /* Prevent overflow */
+}
+
+.progress {
+    height: 100%;
+    background-color: #4A90E2; /* Primary Color for Progress */
+    border-radius: 5px;
+    width: 0%; /* Initial width set to 0% */
+    transition: width 0.5s; /* Smooth transition for progress */
+}
+
+.game-over {
+    width: 100%;
+    max-width: 600px;
+    background-color: #FFFFFF; /* White Background */
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .quiz-container, .quiz-type-selection, .game-over {
+        padding: 20px;
+    }
+    .options li {
+        font-size: 16px;
+    }
+}
+
+.game-over-message {
+    width: 100%;
+    max-width: 600px;
+    background-color: #FFFFFF; /* White Background */
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    position: absolute; /* Position it in the center of the screen */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the message */
+}
+
+.game-over-message button {
+    background-color: #E94E77; /* Secondary Color for Button */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px; /* Add some space between buttons */
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s; /* Add transform for hover effect */
+}
+
+.game-over-message button:hover {
+    background-color: #F5A623; /* Accent Color on Hover */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.show-instructions {
+    background-color: #E94E77; /* Secondary Color for Buttons */
+    color: white;
+    padding: 15px 20px; /* Same padding as Home button */
+    border: none;
+    font-size: 18px; /* Same font size as Home button */
+    cursor: pointer;
+    max-width: 200px; /* Set a max-width for the button */
+    margin-top: 40px; /* Spacing above the button */
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s; /* Add transform for hover effect */
+}
+
+.show-instructions:hover {
+    background-color: #F5A623; /* Accent Color on Hover */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.main-screen {
+    width: 100%;
+    max-width: 600px;
+    background-color: #FFFFFF; /* White Background */
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    position: absolute; /* Center it on the screen */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the main screen */
+}
+.main-screen h1 {
+    font-family: 'Montserrat', sans-serif; /* Montserrat for Headings */
+    color: #4A90E2; /* Primary Color */
+    margin-bottom: 20px;
+}
+.main-screen button {
+    background-color: #E94E77; /* Secondary Color for Button */
+    color: white;
+    padding: 15px 20px;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s; /* Add transform for hover effect */
+}
+.main-screen button:hover {
+    background-color: #F5A623; /* Accent Color on Hover */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+#mute-button {
+    background-color: #E94E77; /* Secondary Color */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Make it circular */
+    width: 40px; /* Width of the button */
+    height: 40px; /* Height of the button */
+    cursor: pointer;
+    position: fixed; /* Fixed positioning */
+    bottom: 20px; /* Distance from the bottom */
+    right: 20px; /* Distance from the right */
+    display: flex; /* Enable flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    transition: background-color 0.3s, transform 0.3s; /* Transition for hover effect */
+    font-size: 10px; /* Adjust font size to fit within the button */
+}
+
+#mute-button:hover {
+    background-color: #F5A623; /* Accent Color on Hover */
+    transform: scale(1.1); /* Slightly enlarge on hover */
+}
+</style>
+</head>
+<body>
+
+  
+<audio id="correct-sound" src="sounds/correct.mp3.wav"></audio>
+<audio id="incorrect-sound" src="sounds/incorrect.mp3.wav"></audio>
+<audio id="button-click" src="sounds/click.mp3.wav"></audio>
+<audio id="game-over-sound" src="sounds/game-over.mp3.wav"></audio>
+
+  <button id="mute-button">Mute</button>
+
+  <!-- Main Screen -->
+<div class="main-screen">
+  <h1>QuizBee</h1>
+  <button onclick="startGame()">Start Game</button>
+</div>
+
+<!-- Instructions Section -->
+<div class="instructions" style="display: none;">
+  <h2>Instructions</h2>
+  <p>Welcome to the QuizBee!</p>
+  <p>Select a quiz type and click "Start Quiz" to begin.</p>
+  <p>Answer the questions by clicking on the options. You have 60 seconds to complete the quiz.</p>
+  <p>Your score will be displayed at the end of the quiz.</p>
+  <button onclick="goHome()">Home</button> <!-- Home button to go back -->
+</div>
+
+<!-- Quiz Type Selection -->
+<div class="quiz-type-selection">
+  <h2>Select Quiz Type</h2>
+  <label><input type="radio" name="quizType" value="generalKnowledge" checked> General Knowledge</label><br>
+  <label><input type="radio" name="quizType" value="history"> History</label><br>
+  <label><input type="radio" name="quizType" value="science"> Science</label><br>
+  <button onclick="startQuiz()">Start Quiz</button>
+</div>
+
+<!-- Quiz Container -->
+<div class="quiz-container">
+  <div class="progress-bar">
+      <div class="progress" id="progress"></div>
+  </div>
+  <div class="question-container">
+      <div class="question"></div>
+      <ul class="options"></ul>
+  </div>
+  <div class="result"></div>
+</div>
+
+<!-- Button to Show Instructions -->
+<button class="show-instructions" onclick="showInstructions()">Show Instructions</button>
+<!-- Game Over Screen -->
+<div class="game-over" style="display: none;">
+  <h2>Game Over!</h2>
+  <p>Your score: <span id="final-score">0</span></p>
+  <p>High Score: <span id="high-score">0</span></p> <!-- Add this line -->
+  <button onclick="restartQuiz()">Restart</button>
+  <button onclick="goHome()">Home</button>
+</div>
+
+<!-- Congratulations Screen -->
+<div class="congratulations" style="display: none;">
+  <h2>Congratulations!</h2>
+  <p>You Win! Your score: <span id="win-score">0</span></p>
+  <button onclick="goHome()">Home</button>
+</div>
+
+<!-- Score Box -->
+<div class="score-box" style="display: none;">
+Score: <span id="score">0</span>
+</div>
+
+<!-- Timer Box -->
+<div class="timer-box" style="display: none;">
+Time Remaining: <span id="time-remaining">60</span> seconds
+</div>
+
+<!-- Leaderboard Section -->
+<div class="leaderboard" style="display: none;">
+  <h2>Leaderboard</h2>
+  <p>High Score: <span id="high-score">0</span></p>
+  <button onclick="goHome()">Back to Quiz Selection</button>
+</div>
+
+<script>
+// Quiz Data
+const quizData = {
+generalKnowledge: [
+{ question: "Which planet is known as the Red Planet?",
+options: ["Earth", "Mars", "Jupiter", "Venus"],
+answer: "Mars" },
+{
+  question: "What is the largest planet in our solar system?",
+  options: ["Earth", "Jupiter", "Saturn", "Mars"],
+  answer: "Jupiter"
+},
+{
+  question: "What is the main ingredient in hummus?",
+  options: ["Chickpeas", "Lentils", "Peas", "Beans"],
+  answer: "Chickpeas"
+},
+{
+  question: "Which animal is known as the ship of the desert?",
+  options: ["Camel", "Horse", "Elephant", "Donkey"],
+  answer: "Camel"
+},
+{
+  question: "What is the currency of the United Kingdom?",
+  options: ["Dollar", "Euro", "Pound", "Franc"],
+  answer: "Pound"
+},
+{
+  question: "Which organ is responsible for pumping blood in the human body?",
+  options: ["Liver", "Lungs", "Heart", "Kidneys"],
+  answer: "Heart"
+},
+{
+  question: "What is the capital city of Australia?",
+  options: ["Sydney", "Canberra", "Melbourne", "Brisbane"],
+  answer: "Canberra"
+},
+{
+  question: "Which planet is known for its rings?",
+  options: ["Mars", "Jupiter", "Saturn", "Uranus"],
+  answer: "Saturn"
+},
+{
+  question: "Who painted the ceiling of the Sistine Chapel?",
+  options: ["Leonardo da Vinci", "Michelangelo", "Raphael", "Donatello"],
+  answer: "Michelangelo"
+},
+{
+  question: "What is the capital of Japan?",
+  options: ["Tokyo", "Seoul", "Beijing", "Bangkok"],
+  answer: "Tokyo"
+},
+{
+  question: "Which gas is most abundant in the Earth's atmosphere?",
+  options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+  answer: "Nitrogen"
+},
+{
+  question: "Which planet is closest to the Sun?",
+  options: ["Venus", "Earth", "Mercury", "Mars"],
+  answer: "Mercury"
+},
+{
+  question: "Which country is home to the kangaroo?",
+  options: ["New Zealand", "Australia", "Canada", "South Africa"],
+  answer: "Australia"
+},
+{
+  question: "What is the main ingredient in chocolate?",
+  options: ["Cocoa", "Sugar", "Milk", "Vanilla"],
+  answer: "Cocoa"
+},
+{
+  question: "Which ocean is the largest?",
+  options: ["Atlantic", "Indian", "Arctic", "Pacific"],
+  answer: "Pacific"
+},
+{
+  question: "What is the tallest building in the world as of 2023?",
+  options: ["Burj Khalifa", "Shanghai Tower", "One World Trade Center", "Taipei 101"],
+  answer: "Burj Khalifa"
+},
+{
+  question: "Which element has the atomic number 1?",
+  options: ["Helium", "Oxygen", "Hydrogen", "Carbon"],
+  answer: "Hydrogen"
+},
+{
+  question: "Who is known as the father of modern physics?",
+  options: ["Isaac Newton", "Albert Einstein", "Galileo Galilei", "Niels Bohr"],
+  answer: "Albert Einstein"
+},
+{
+  question: "Which country is known for the Great Wall?",
+  options: ["Japan", "India", "China", "Russia"],
+  answer: "China"
+},
+{
+  question: "What is the smallest continent?",
+  options: ["Australia", "Europe", "Antarctica", "South America"],
+  answer: "Australia"
+},
+{
+  question: "Which fruit is known as the king of fruits?",
+  options: ["Mango", "Durian", "Apple", "Banana"],
+  answer: "Durian"
+},
+{
+    question: "Who discovered penicillin?",
+    options: ["Marie Curie", "Alexander Fleming", "Louis Pasteur", "Isaac Newton"],
+    answer: "Alexander Fleming"
+},
+{
+  question: "What is the largest desert in the world?",
+  options: ["Sahara", "Arabian", "Gobi", "Kalahari"],
+  answer: "Sahara"
+},
+{
+  question: "Which element has the chemical symbol 'O'?",
+  options: ["Osmium", "Oxygen", "Gold", "Silver"],
+  answer: "Oxygen"
+},
+{
+  question: "Who wrote 'Romeo and Juliet'?",
+  options: ["Charles Dickens", "William Shakespeare", "Mark Twain", "Jane Austen"],
+  answer: "William Shakespeare"
+},
+{
+  question: "What is the smallest planet in our solar system?",
+  options: ["Mercury", "Mars", "Venus", "Earth"],
+  answer: "Mercury"
+},
+{
+  question: "In which year did the Titanic sink?",
+  options: ["1910", "1912", "1914", "1916"],
+  answer: "1912"
+},
+{
+  question: "What is the capital of France?",
+  options: ["Berlin", "Madrid", "Paris", "Rome"],
+  answer: "Paris"
+},
+{
+  question: "Which is the longest river in the world?",
+  options: ["Amazon", "Nile", "Yangtze", "Mississippi"],
+  answer: "Nile"
+},
+{
+  question: "Which country is known as the Land of the Rising Sun?",
+  options: ["China", "Japan", "Thailand", "India"],
+  answer: "Japan"
+},
+{
+  question: "What is the hardest natural substance on Earth?",
+  options: ["Gold", "Diamond", "Iron", "Quartz"],
+  answer: "Diamond"
+},
+{
+  question: "What is the main ingredient in sushi?",
+  options: ["Noodles", "Rice", "Fish", "Seaweed"],
+  answer: "Rice"
+},
+{
+    question: "What is the main purpose of the United Nations?",
+    options: ["Military alliance", "Economic cooperation", "Promote peace and security", "Cultural exchange"],
+    answer: "Promote peace and security"
+},
+{
+    question: "Which famous landmark was gifted to the United States by France?",
+    options: ["The Great Wall", "Statue of Liberty", "Eiffel Tower", "Colosseum"],
+    answer: "Statue of Liberty"
+},
+{
+question: "Which planet is known as the Red Planet?",
+options: ["Earth", "Mars", "Jupiter", "Venus"],
+answer: "Mars"
+},
+{
+question: "What is the currency of Japan?",
+options: ["Yen", "Dollar", "Euro", "Won"],
+answer: "Yen"
+},
+{
+question: "What is the largest ocean on Earth?",
+options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean","Pacific Ocean"],
+answer: "Pacific Ocean"
+},
+{
+question: "Which animal is known as the king of the jungle?",
+options: ["Tiger", "Elephant", "Lion", "Giraffe"],
+answer: "Lion"
+},
+{
+question: "What is the hardest natural substance on Earth?",
+options: ["Gold", "Iron", "Diamond", "Quartz"],
+answer: "Diamond"
+},
+{
+question: "Who painted the Mona Lisa?",
+options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"],
+answer: "Leonardo da Vinci"
+},
+{
+question: "What is the main ingredient in guacamole?",
+options: ["Tomato", "Avocado", "Pepper", "Onion"],
+answer: "Avocado"
+},
+{
+question: "What is the capital of Canada?",
+options: ["Toronto", "Ottawa", "Vancouver", "Montreal"],
+answer: "Ottawa"
+},
+{
+question: "What is the largest mammal in the world?",
+options: ["Elephant", "Blue Whale", "Giraffe", "Great White Shark"],
+answer: "Blue Whale"
+},
+{
+question: "What is the primary language spoken in Brazil?",
+options: ["Spanish", "Portuguese", "English", "French"],
+answer: "Portuguese"
+},
+{
+question: "What is the boiling point of water?",
+options: ["100°C", "90°C", "80°C", "120°C"],
+answer: "100°C"
+},
+{
+question: "What is the capital of Italy?",
+options: ["Florence", "Venice", "Rome", "Milan"],
+answer: "Rome"
+},
+{
+question: "What is the tallest mountain in the world?",
+options: ["K2", "Kangchenjunga", "Mount Everest", "Lhotse"],
+answer: "Mount Everest"
+},
+{
+question: "What is the main ingredient in bread?",
+options: ["Flour", "Sugar", "Salt", "Yeast"],
+answer: "Flour"
+},
+{
+question: "What is the capital of Egypt?",
+options: ["Cairo", "Alexandria", "Giza", "Luxor"],
+answer: "Cairo"
+},
+{
+question: "Which country is known for the pyramids?",
+options: ["Greece", "Egypt", "Mexico", "China"],
+answer: "Egypt"
+},
+{
+question: "What is the largest continent?",
+options: ["Africa", "Asia", "Europe", "North America"],
+answer: "Asia"
+},
+{
+question: "What is the chemical symbol for water?",
+options: ["H2O", "CO2", "O2", "NaCl"],
+answer: "H2O"
+},
+{
+question: "Which gas do plants absorb from the atmosphere?",
+options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Helium"],
+answer: "Carbon Dioxide"
+},
+{
+question: "What is the smallest country in the world?",
+options: ["Monaco", "Nauru", "Vatican City", "San Marino"],
+answer: "Vatican City"
+},
+{
+question: "Which country is famous for the Eiffel Tower?",
+options: ["Italy", "Germany", "France", "Spain"],
+answer: "France"
+},
+{
+question: "What is the primary ingredient in chocolate?",
+options: ["Cocoa", "Sugar", "Milk", "Vanilla"],
+answer: "Cocoa"
+},
+{
+question: "What is the largest island in the world?",
+options: ["Greenland", "New Guinea", "Borneo", "Madagascar"],
+answer: "Greenland"
+},
+{
+question: "What is the primary ingredient in traditional pesto?",
+options: ["Basil", "Parsley", "Cilantro", "Mint"],
+answer: "Basil"
+},
+{
+question: "What is the capital of South Africa?",
+options: ["Cape Town", "Pretoria", "Durban", "Johannesburg"],
+answer: "Pretoria"
+},
+{
+question: "What is the freezing point of water?",
+options: ["0°C", "32°F", "100°F", "0°F"],
+answer: "0°C"
+},
+],
+history: [
+{
+question: "Who was the first president of the United States?",
+options: ["George Washington", "Thomas Jefferson", "Abraham Lincoln", "John Adams"],
+answer: "George Washington"
+},
+{
+question: "What year did World War I begin?",
+options: ["1914", "1915", "1916", "1917"],
+answer: "1914"
+},
+{
+question: "Which ancient civilization built the pyramids?",
+options: ["Maya", "Inca", "Egyptian", "Roman"],
+answer: "Egyptian"
+},
+{
+question: "Who was the first woman to fly solo across the Atlantic Ocean?",
+options: ["Amelia Earhart", "Bessie Coleman", "Harriet Quimby", "Jacqueline Cochran"],
+answer: "Amelia Earhart"
+},
+{
+question: "What was the main cause of the American Civil War?",
+options: ["Taxation", "Slavery", "Territorial Expansion", "Trade Disputes"],
+answer: "Slavery"
+},
+{
+question: "Who was the leader of the Soviet Union during World War II?",
+options: ["Stalin", "Lenin", "Trotsky", "Gorbachev"],
+answer: "Stalin"
+},
+{
+question: "Which event marked the beginning of the French Revolution?",
+options: ["Storming of the Bastille", "Signing of the Declaration of the Rights of Man", "Establishment of the National Assembly", "Execution of Louis XVI"],
+answer: "Storming of the Bastille"
+},
+{
+question: "Who was the famous civil rights leader who delivered the 'I Have a Dream' speech?",
+options: ["Malcolm X", "Rosa Parks", "Martin Luther King Jr.", "Nelson Mandela"],
+answer: "Martin Luther King Jr."
+},
+{
+question: "Which empire was known for its road system and the Pax Romana?",
+options: ["Ottoman Empire", "Roman Empire", "Mongol Empire", "Byzantine Empire"],
+answer: "Roman Empire"
+},
+{
+question: "What was the primary purpose of the Berlin Wall?",
+options: ["Trade Regulation", "Preventing Immigration", "Separating East and West Berlin", "Military Defense"],
+answer: "Separating East and West Berlin"
+},
+{
+question: "Who was the famous queen of ancient Egypt?",
+options: ["Nefertiti", "Cleopatra", "Hatshepsut", "Tutankhamun"],
+answer: "Cleopatra"
+},
+{
+question: "What was the name of the ship that brought the Pilgrims to America?",
+options: ["Mayflower", "Santa Maria", "Pinta", "Nina"],
+answer: "Mayflower"
+},
+{
+question: "Who was the first emperor of China?",
+options: ["Qin Shi Huang", "Kublai Khan", "Sun Yat-sen", "Mao Zedong"],
+answer: "Qin Shi Huang"
+},
+{
+question: "What ancient civilization is known for its writing system called cuneiform?",
+options: ["Egyptian", "Sumerian", "Mayan", "Chinese"],
+answer: "Sumerian"
+},
+{
+question: "Who was the first person to circumnavigate the globe?",
+options: ["Ferdinand Magellan", "Christopher Columbus", "James Cook", "Marco Polo"],
+answer: "Ferdinand Magellan"
+},
+{
+question: "What was the primary cause of the Cold War?",
+options: ["Ideological differences", "Territorial disputes", "Economic competition", "Military alliances"],
+answer: "Ideological differences"
+},
+{
+question: "Which event triggered the start of World War I?",
+options: ["Assassination of Archduke Franz Ferdinand", "Invasion of Poland", "Attack on Pearl Harbor", "Sinking of the Lusitania"],
+answer: "Assassination of Archduke Franz Ferdinand"
+},
+{
+question: "Who was the first female Prime Minister of the United Kingdom?",
+options: ["Margaret Thatcher", "Theresa May", "Angela Merkel", "Golda Meir"],
+answer: "Margaret Thatcher"
+},
+{
+question: "What year did the Berlin Wall fall?",
+options: ["1987", "1989", "1991", "1993"],
+answer: "1989"
+},
+{
+question: "Who was the first man to step on the moon?",
+options: ["Buzz Aldrin", "Neil Armstrong", "Yuri Gagarin", "Michael Collins"],
+answer: "Neil Armstrong"
+},
+{
+question: "Which war was fought between the North and South regions of the United States?",
+options: ["World War I", "World War II", "American Civil War", "Vietnam War"],
+answer: "American Civil War"
+},
+{
+question: "What was the primary cause of World War I?",
+options: ["Nationalism", "Imperialism", "Militarism", "All of the above"],
+answer: "All of the above"
+},
+{
+question: "Who was the leader of the Soviet Union during the Cuban Missile Crisis?",
+options: ["Stalin", "Khrushchev", "Gorbachev", "Brezhnev"],
+answer: "Khrushchev"
+},
+{
+question: "Which document declared the independence of the United States?",
+options: ["The Constitution", "The Bill of Rights", "The Declaration of Independence", "The Emancipation Proclamation"],
+answer: "The Declaration of Independence"
+},
+{
+question: "What was the main purpose of the Lewis and Clark Expedition?",
+options: ["Explore the West", "Map the East Coast", "Establish Trade Routes", "Find Gold"],
+answer: "Explore the West"
+},
+{
+question: "Who was the famous British Prime Minister during World War II?",
+options: ["Winston Churchill", "Neville Chamberlain", "Clement Attlee", "Tony Blair"],
+answer: "Winston Churchill"
+},
+{
+question: "Who was the first president of the United States?",
+options: ["George Washington", "Thomas Jefferson", "Abraham Lincoln", "John Adams"],
+answer: "George Washington"
+},
+{
+question: "What year did World War II begin?",
+options: ["1935", "1939", "1941", "1945"],
+answer: "1939"
+},
+{
+question: "Which ancient civilization built the pyramids?",
+options: ["Maya", "Inca", "Egyptian", "Roman"],
+answer: "Egyptian"
+},
+{
+question: "Who was the first woman to fly solo across the Atlantic Ocean?",
+options: ["Amelia Earhart", "Bessie Coleman", "Harriet Quimby", "Jacqueline Cochran"],
+answer: "Amelia Earhart"
+},
+{
+question: "What was the main cause of the American Civil War?",
+options: ["Taxation", "Slavery", "Territorial Expansion", "Trade Disputes"],
+answer: "Slavery"
+},
+{
+question: "Who was the leader of the Soviet Union during World War II?",
+options: ["Stalin", "Lenin", "Trotsky", "Gorbachev"],
+answer: "Stalin"
+},
+{
+question: "Which event marked the beginning of the French Revolution?",
+options: ["Storming of the Bastille", "Signing of the Declaration of the Rights of Man", "Establishment of the National Assembly", "Execution of Louis XVI"],
+answer: "Storming of the Bastille"
+},
+{
+question: "What year did the Titanic sink?",
+options: ["1905", "1912", "1918", "1923"],
+answer: "1912"
+},
+{
+question: "Who was the famous civil rights leader who delivered the 'I Have a Dream' speech?",
+options: ["Malcolm X", "Rosa Parks", "Martin Luther King Jr.", "Nelson Mandela"],
+answer: "Martin Luther King Jr."
+},
+{
+question: "Which empire was known for its road system and the Pax Romana?",
+options: ["Ottoman Empire", "Roman Empire", "Mongol Empire", "Byzantine Empire"],
+answer: "Roman Empire"
+},
+{
+question: "What was the primary purpose of the Berlin Wall?",
+options: ["Trade Regulation", "Preventing Immigration", "Separating East and West Berlin", "Military Defense"],
+answer: "Separating East and West Berlin"
+},
+{
+question: "Who was the first female Prime Minister of the United Kingdom?",
+options: ["Margaret Thatcher", "Theresa May", "Angela Merkel", "Golda Meir"],
+answer: "Margaret Thatcher"
+},
+{
+question: "What was the main purpose of the Lewis and Clark Expedition?",
+options: ["Explore the West", "Map the East Coast", "Establish Trade Routes", "Find Gold"],
+answer: "Explore the West"
+},
+{
+question: "Who was the famous queen of ancient Egypt?",
+options: ["Nefertiti", "Cleopatra", "Hatshepsut", "Tutankhamun"],
+answer: "Cleopatra"
+},
+{
+question: "What was the name of the ship that brought the Pilgrims to America?",
+options: ["Mayflower", "Santa Maria", "Pinta", "Nina"],
+answer: "Mayflower"
+},
+{
+question: "Which war was fought between the North and South regions of the United States?",
+options: ["World War I", "World War II", "American Civil War", "Vietnam War"],
+answer: "American Civil War"
+},
+{
+question: "What year did the Berlin Wall fall?",
+options: ["1985", "1989", "1991", "1993"],
+answer: "1989"
+},
+{
+question: "Who was the first emperor of China?",
+options: ["Qin Shi Huang", "Kublai Khan", "Sun Yat-sen", "Mao Zedong"],
+answer: "Qin Shi Huang"
+},
+{
+question: "What ancient civilization is known for its city-states and the development of democracy?",
+options: ["Egyptian", "Mesopotamian", "Greek", "Roman"],
+answer: "Greek"
+},
+{
+question: "What was the significance of the Magna Carta?",
+options: ["Established the Church of England", "Limited the power of the king", "Ended the Hundred Years' War", "Created the English Parliament"],
+answer: "Limited the power of the king"
+},
+{
+question: "Who was the famous leader of the Indian independence movement?",
+options: ["Jawaharlal Nehru", "Mahatma Gandhi", "Subhas Chandra Bose", "B.R. Ambedkar"],
+answer: "Mahatma Gandhi"
+},
+{
+question: "What year did the first man land on the moon?",
+options: ["1965", "1969", "1971", "1975"],
+answer: "1969"
+},
+{
+question: "Which ancient civilization is known for its writing system called cuneiform?",
+options: ["Egyptian", "Sumerian", "Mayan", "Chinese"],
+answer: "Sumerian"
+},
+{
+question: "Who was the first person to circumnavigate the globe?",
+options: ["Ferdinand Magellan", "Christopher Columbus", "James Cook", "Marco Polo"],
+answer: "Ferdinand Magellan"
+},
+{
+question: "What was the primary cause of the Cold War?",
+options: ["Ideological differences", "Territorial disputes", "Economic competition", "Military alliances"],
+answer: "Ideological differences"
+},
+{
+question: "Which event triggered the start of World War I?",
+options: ["Assassination of Archduke Franz Ferdinand", "Invasion of Poland", "Attack on Pearl Harbor", "Sinking of the Lusitania"],
+answer: "Assassination of Archduke Franz Ferdinand"
+},
+{
+question: "What was the primary purpose of the Lewis and Clark Expedition?",
+options: ["Explore the West", "Map the East Coast", "Establish Trade Routes", "Find Gold"],
+answer: "Explore the West"
+},
+{
+question: "Who was the last Tsar of Russia?",
+options: ["Nicholas II", "Alexander III", "Peter the Great", "Catherine the Great"],
+answer: "Nicholas II"
+},
+{
+question: "Which battle is considered the turning point of the American Civil War?",
+options: ["Battle of Gettysburg", "Battle of Antietam", "Battle of Bull Run", "Battle of Vicksburg"],
+answer: "Battle of Gettysburg"
+},
+{
+question: "What was the name of the ship that brought the Pilgrims to America?",
+options: ["Mayflower", "Santa Maria", "Pinta", "Nina"],
+answer: "Mayflower"
+},
+{
+question: "Who was the famous British Prime Minister during World War II?",
+options: ["Winston Churchill", "Neville Chamberlain", "Clement Attlee", "Tony Blair"],
+answer: "Winston Churchill"
+},
+{
+question: "What was the main goal of the Crusades?",
+options: ["Spread Christianity", "Gain territory", "Establish trade routes", "Defend against invasions"],
+answer: "Spread Christianity"
+},
+{
+question: "Which country was the first to grant women the right to vote?",
+options: ["New Zealand", "United States", "United Kingdom", "Australia"],
+answer: "New Zealand"
+},
+{
+question: "What was the name of the first artificial satellite launched into space?",
+options: ["Apollo 11", "Sputnik 1", "Vostok 1", "Explorer 1"],
+answer: "Sputnik 1"
+},
+{
+question: "What was the primary focus of the Renaissance?",
+options: ["Religious reform", "Art and science", "Colonization", "Industrialization"],
+answer: "Art and science"
+},
+{
+question: "Who was the famous general who led the French army during the Napoleonic Wars?",
+options: ["Napoleon Bonaparte", "Charles de Gaulle", "Louis XIV", "Henri IV"],
+answer: "Napoleon Bonaparte"
+},
+{
+question: "What was the primary purpose of the United Nations when it was founded?",
+options: ["Promote economic growth", "Prevent future wars", "Establish trade agreements", "Support colonialism"],
+answer: "Prevent future wars"
+},
+],
+science: [
+{
+question: "What is the chemical symbol for water?",
+options: ["H2O", "O2", "CO2", "H2"],
+answer: "H2O"
+},
+{
+question: "What is the chemical symbol for sodium?",
+options: ["Na", "S", "K", "Ca"],
+answer: "Na"
+},
+{
+question: "What is the process of water vapor turning into liquid called?",
+options: ["Evaporation", "Condensation", "Sublimation", "Precipitation"],
+answer: "Condensation"
+},
+{
+question: "What is the main gas responsible for global warming?",
+options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Methane"],
+answer: "Carbon Dioxide"
+},
+{
+question: "What is the basic unit of life?",
+options: ["Atom", "Molecule", "Cell", "Organism"],
+answer: "Cell"
+},
+{
+question: "What is the speed of light?",
+options: ["300,000 km/s", "150,000 km/s", "1,000 km/s", "300 km/s"],
+answer: "300,000 km/s"
+},
+{
+question: "What type of bond involves the sharing of electron pairs between atoms?",
+options: ["Ionic bond", "Covalent bond", "Metallic bond", "Hydrogen bond"],
+answer: "Covalent bond"
+},
+{
+question: "What is the pH level of pure water?",
+options: ["0", "7", "14", "10"],
+answer: "7"
+},
+{
+question: "What is the term for a change in a species over time?",
+options: ["Adaptation", "Evolution", "Mutation", "Speciation"],
+answer: "Evolution"
+},
+{
+question: "What is the process by which cells divide to form two identical daughter cells?",
+options: ["Mitosis", "Meiosis", "Fission", "Budding"],
+answer: "Mitosis"
+},
+{
+question: "What is the main function of the mitochondria?",
+options: ["Protein synthesis", "Energy production", "Photosynthesis", "Cell division"],
+answer: "Energy production"
+},
+{
+question: "What is the chemical formula for glucose?",
+options: ["C6H12O6", "C12H22O11", "C6H6", "CH4"],
+answer: "C6H12O6"
+},
+{
+question: "What is the most abundant element in the Earth's crust?",
+options: ["Oxygen", "Silicon", "Aluminum", "Iron"],
+answer: "Oxygen"
+},
+{
+question: "What type of energy is associated with motion?",
+options: ["Kinetic energy", "Potential energy", "Thermal energy", "Chemical energy"],
+answer: "Kinetic energy"
+},
+{
+question: "What is the primary function of red blood cells?",
+options: ["Fight infection", "Carry oxygen", "Clot blood", "Regulate temperature"],
+answer: "Carry oxygen"
+},
+{
+question: "What is the force that pulls objects toward the Earth?",
+options: ["Friction", "Magnetism", "Gravity", "Inertia"],
+answer: "Gravity"
+},
+{
+question: "What is the main source of energy for the Earth?",
+options: ["The Moon", "The Sun", "Wind", "Geothermal energy"],
+answer: "The Sun"
+},
+{
+question: "What is the study of fungi called?",
+options: ["Mycology", "Botany", "Zoology", "Microbiology"],
+answer: "Mycology"
+},
+{
+question: "What is the term for a substance that speeds up a chemical reaction?",
+options: ["Catalyst", "Inhibitor", "Reactant", "Product"],
+answer: "Catalyst"
+},
+{
+question: "What is the primary function of the skeletal system?",
+options: ["Produce hormones", "Provide structure and support", "Transport nutrients", "Fight infections"],
+answer: "Provide structure and support"
+},
+{
+question: "What is the chemical symbol for iron?",
+options: ["Fe", "Ir", "I", "Au"],
+answer: "Fe"
+},
+{
+question: "What is the powerhouse of the cell?",
+options: ["Nucleus", "Mitochondria", "Ribosome", "Endoplasmic Reticulum"],
+answer: "Mitochondria"
+},
+{
+question: "What planet is known as the Red Planet?",
+options: ["Earth", "Mars", "Jupiter", "Venus"],
+answer: "Mars"
+},
+{
+question: "What is the process by which plants make their food?",
+options: ["Photosynthesis", "Respiration", "Transpiration", "Digestion"],
+answer: "Photosynthesis"
+},
+{
+question: "What is the most abundant gas in the Earth's atmosphere?",
+options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+answer: "Nitrogen"
+},
+{
+question: "What is the chemical formula for table salt?",
+options: ["NaCl", "KCl", "CaCl2", "MgCl2"],
+answer: "NaCl"
+},
+{
+question: "What is the largest organ in the human body?",
+options: ["Heart", "Liver", "Skin", "Lungs"],
+answer: "Skin"
+},
+{
+question: "What is the speed of light?",
+options: ["300,000 km/s", "150,000 km/s", "1,000 km/s", "300 km/s"],
+answer: "300,000 km/s"
+},
+{
+question: "What is the basic unit of life?",
+options: ["Atom", "Molecule", "Cell", "Organism"],
+answer: "Cell"
+},
+{
+question: "What is the most common element in the universe?",
+options: ["Oxygen", "Hydrogen", "Carbon", "Helium"],
+answer: "Hydrogen"
+},
+{
+question: "What type of bond involves the sharing of electron pairs between atoms?",
+options: ["Ionic bond", "Covalent bond", "Metallic bond", "Hydrogen bond"],
+answer: "Covalent bond"
+},
+{
+question: "What is the pH level of pure water?",
+options: ["0", "7", "14", "10"],
+answer: "7"
+},
+{
+question: "What is the main gas responsible for global warming?",
+options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Methane"],
+answer: "Carbon Dioxide"
+},
+{
+question: "What is the chemical symbol for gold?",
+options: ["Au", "Ag", "Fe", "Pb"],
+answer: "Au"
+},
+{
+question: "What is the process of converting solid directly into gas called?",
+options: ["Sublimation", "Evaporation", "Condensation", "Freezing"],
+answer: "Sublimation"
+},
+{
+question: "What is the study of living organisms called?",
+options: ["Biology", "Chemistry", "Physics", "Ecology"],
+answer: "Biology"
+},
+{
+question: "What is the smallest unit of an element?",
+options: ["Atom", "Molecule", "Compound", "Ion"],
+answer: "Atom"
+},
+{
+question: "What type of energy is stored in food?",
+options: ["Kinetic energy", "Potential energy", "Chemical energy", "Thermal energy"],
+answer: "Chemical energy"
+},
+{
+question: "What is the main function of red blood cells?",
+options: ["Fight infection", "Carry oxygen", "Clot blood", "Regulate temperature"],
+answer: "Carry oxygen"
+},
+{
+question: "What is the force that pulls objects toward the Earth?",
+options: ["Friction", "Magnetism", "Gravity", "Inertia"],
+answer: "Gravity"
+},
+{
+question: "What is the chemical formula for glucose?",
+options: ["C6H12O6", "C12H22O11", "C6H6", "CH4"],
+answer: "C6H12O6"
+},
+{
+question: "What is the most abundant element in the Earth's crust?",
+options: ["Oxygen", "Silicon", "Aluminum", "Iron"],
+answer: "Oxygen"
+},
+{
+question: "What type of energy is associated with motion?",
+options: ["Kinetic energy", "Potential energy", "Thermal energy", "Chemical energy"],
+answer: "Kinetic energy"
+},
+{
+question: "What is the primary function of the mitochondria?",
+options: ["Protein synthesis", "Energy production", "Photosynthesis", "Cell division"],
+answer: "Energy production"
+},
+{
+question: "What is the main component of the Earth's core?",
+options: ["Iron", "Nickel", "Silicon", "Oxygen"],
+answer: "Iron"
+},
+{
+question: "What is the term for a change in a species over time?",
+options: ["Adaptation", "Evolution", "Mutation", "Speciation"],
+answer: "Evolution"
+},
+{
+question: "What is the chemical symbol for silver?",
+options: ["Ag", "Au", "Pb", "Fe"],
+answer: "Ag"
+},
+{
+question: "What type of radiation is used in medical imaging?",
+options: ["Gamma rays", "X-rays", "Ultraviolet rays", "Infrared rays"],
+answer: "X-rays"
+},
+{
+question: "What is the main purpose of DNA?",
+options: ["Energy storage", "Protein synthesis", "Genetic information storage", "Cellular respiration"],
+answer: "Genetic information storage"
+},
+{
+question: "What is the primary gas that plants take in during photosynthesis?",
+options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+answer: "Carbon Dioxide"
+},
+{
+question: "What is the term for the variety of different species in an ecosystem?",
+options: ["Biodiversity", "Population", "Community", "Ecosystem"],
+answer: "Biodiversity"
+},
+{
+question: "What is the main function of the immune system?",
+options: ["Regulate body temperature", "Transport nutrients", "Fight infections", "Produce hormones"],
+answer: "Fight infections"
+},
+{
+question: "What is the scientific study of weather called?",
+options: ["Meteorology", "Climatology", "Geology", "Astronomy"],
+answer: "Meteorology"
+},
+{
+question: "What is the process by which a liquid turns into a gas?",
+options: ["Evaporation", "Condensation", "Sublimation", "Freezing"],
+answer: "Evaporation"
+},
+{
+question: "What is the main organ responsible for pumping blood throughout the body?",
+options: ["Liver", "Lungs", "Heart", "Kidneys"],
+answer: "Heart"
+},
+{
+question: "What is the term for the movement of water through a semi-permeable membrane?",
+options: ["Diffusion", "Osmosis", "Filtration", "Active transport"],
+answer: "Osmosis"
+},
+{
+question: "What type of bond involves the transfer of electrons between atoms?",
+options: ["Ionic bond", "Covalent bond", "Metallic bond", "Hydrogen bond"],
+answer: "Ionic bond"
+},
+{
+question: "What is the main source of energy for the Earth?",
+options: ["The Moon", "The Sun", "Wind", "Geothermal energy"],
+answer: "The Sun"
+},
+{
+question: "What is the study of fungi called?",
+options: ["Mycology", "Botany", "Zoology", "Microbiology"],
+answer: "Mycology"
+},
+{
+question: "What is the term for a substance that speeds up a chemical reaction?",
+options: ["Catalyst", "Inhibitor", "Reactant", "Product"],
+answer: "Catalyst"
+},
+{
+question: "What is the primary function of the skeletal system?",
+options: ["Produce hormones", "Provide structure and support", "Transport nutrients", "Fight infections"],
+answer: "Provide structure and support"
+},
+{
+question: "What is the chemical symbol for sodium?",
+options: ["Na", "S", "K", "Ca"],
+answer: "Na"
+},
+{
+question: "What is the process of water vapor turning into liquid called?",
+options: ["Evaporation", "Condensation", "Sublimation", "Precipitation"],
+answer: "Condensation"
+},
+{
+question: "What is the powerhouse of the cell?",
+options: ["Nucleus", "Mitochondria", "Ribosome", "Chloroplast"],
+answer: "Mitochondria"
+},
+{
+question: "What is the main gas responsible for global warming?",
+options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Methane"],
+answer: "Carbon Dioxide"
+},
+{
+question: "What is the basic unit of life?",
+options: ["Atom", "Molecule", "Cell", "Organism"],
+answer: "Cell"
+},
+{
+question: "What is the speed of light?",
+options: ["300,000 km/s", "150,000 km/s", "1,000 km/s", "300 km/s"],
+answer: "300,000 km/s"
+},
+{
+question: "What type of bond involves the sharing of electron pairs between atoms?",
+options: ["Ionic bond", "Covalent bond", "Metallic bond", "Hydrogen bond"],
+answer: "Covalent bond"
+},
+{
+question: "What is the pH level of pure water?",
+options: ["0", "7", "14", "10"],
+answer: "7"
+},
+{
+question: "What is the most abundant gas in the Earth's atmosphere?",
+options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+answer: "Nitrogen"
+},
+{
+question: "What is the term for a change in a species over time?",
+options: ["Adaptation", "Evolution", "Mutation", "Speciation"],
+answer: "Evolution"
+},
+{
+question: "What is the process by which cells divide to form two identical daughter cells?",
+options: ["Mitosis", "Meiosis", "Fission", "Budding"],
+answer: "Mitosis"
+},
+],
+};
+
+quizData.generalKnowledge = removeDuplicates(quizData.generalKnowledge);
+quizData.history = removeDuplicates(quizData.history);
+quizData.science = removeDuplicates(quizData.science);
+
+let currentQuiz = [];
+let totalQuestions = 0; // This will hold the total number of questions
+let score = 0;
+let timeRemaining = 60; // Timer in seconds
+let timer;
+let questionsAsked = 0; // Counter for questions asked
+let isMuted = false; // Variable to track mute state
+
+let selectedQuizType = ''; // Variable to store the selected quiz type
+// Start Quiz
+
+document.getElementById('mute-button').addEventListener('click', function() {
+    isMuted = !isMuted; // Toggle mute state
+
+    // Change button text based on mute state
+    this.textContent = isMuted ? 'Unmute' : 'Mute';
+
+    // Control audio playback based on mute state
+    document.getElementById('correct-sound').muted = isMuted;
+    document.getElementById('incorrect-sound').muted = isMuted;
+    document.getElementById('button-click').muted = isMuted;
+    document.getElementById('game-over-sound').muted = isMuted;
+});
+
+function playSoundForOneSecond(soundId) {
+    const sound = document.getElementById(soundId);
+    sound.currentTime = 0; // Reset sound to start
+    sound.play(); // Play sound
+    setTimeout(() => {
+        sound.pause(); // Stop the sound after 1 second
+    }, 1000); // 1000 milliseconds = 1 second
+}
+
+function startQuiz() {
+  playClickSound();
+  document.querySelector('.instructions').style.display = 'none'; // Hide instructions
+  document.querySelector('.show-instructions').style.display = 'none'; // Hide show instructions button
+  console.log("Starting quiz of type:", selectedQuizType);
+    selectedQuizType = document.querySelector('input[name="quizType"]:checked').value; // Store selected quiz type
+
+    if (!quizData[selectedQuizType]) {
+        alert("Quiz type not found!");
+        return;
+    }
+
+    currentQuiz = quizData[selectedQuizType];
+    shuffle(currentQuiz); // Shuffle the questions
+    totalQuestions = Math.min(currentQuiz.length, 15); // Limit total questions to 15
+
+    document.querySelector('.quiz-type-selection').style.display = 'none';
+    document.querySelector('.quiz-container').style.display = 'block';
+
+    score = 0;
+    timeRemaining = 60; // Reset timer to 60 seconds
+    document.querySelector('.progress-bar').style.display = 'block'; // Show the progress bar
+    questionsAsked = 0; // Reset the counter for each new quiz
+    document.getElementById('score').textContent = score;
+
+    // Show the score and timer
+    document.querySelector('.score-box').style.display = 'block';
+    document.querySelector('.timer-box').style.display = 'block'; // Show timer when quiz starts
+
+    startTimer();
+    loadQuestion();
+}
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+    }
+}
+
+// Load Question
+console.log("Loading question...");
+function loadQuestion() {
+    if (timeRemaining <= 0) {
+        endQuiz();
+        return;
+    }
+
+    if (currentQuiz.length === 0) {
+        alert("No more questions available!");
+        endQuiz();
+        return;
+    }
+
+    const questionIndex = Math.floor(Math.random() * currentQuiz.length);
+    const questionData = currentQuiz[questionIndex];
+
+    document.querySelector('.question').textContent = questionData.question;
+    const optionsContainer = document.querySelector('.options');
+    optionsContainer.innerHTML = '';
+    questionData.options.forEach(option => {
+        const li = document.createElement('li');
+        li.textContent = option;
+        li.onclick = () => handleAnswer(option, questionData.answer, li);
+        optionsContainer.appendChild(li);
+    });
+
+    questionsAsked++; // Increment the counter each time a question is loaded
+
+    // Remove the asked question from the currentQuiz array
+    currentQuiz.splice(questionIndex, 1);
+}
+
+// Show the main screen on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('.main-screen').style.display = 'block'; // Show main screen on page load
+    document.querySelector('.instructions').style.display = 'none'; // Hide instructions
+    document.querySelector('.quiz-type-selection').style.display = 'none'; // Hide quiz type selection
+    document.querySelector('.quiz-container').style.display = 'none'; // Hide quiz container
+    document.querySelector('.game-over').style.display = 'none'; // Hide game over screen
+    document.querySelector('.congratulations').style.display = 'none'; // Hide congratulations screen
+    document.querySelector('.leaderboard').style.display = 'none'; // Hide leaderboard
+});
+
+function startGame() {
+
+  document.getElementById('button-click').play();
+
+    // Hide the main screen
+    document.querySelector('.main-screen').style.display = 'none'; // Hide main screen
+
+    // Show the quiz type selection
+    document.querySelector('.quiz-type-selection').style.display = 'block'; // Show quiz type selection
+
+    // Hide other sections
+    document.querySelector('.instructions').style.display = 'none'; // Hide instructions
+    document.querySelector('.quiz-container').style.display = 'none'; // Hide quiz container
+    document.querySelector('.game-over').style.display = 'none'; // Hide game over screen
+    document.querySelector('.congratulations').style.display = 'none'; // Hide congratulations screen
+    document.querySelector('.leaderboard').style.display = 'none'; // Hide leaderboard
+}
+
+function updateProgressBar() {
+    const progress = (score / 15) * 100; // Calculate progress based on correct answers, with 15 as the maximum
+    document.getElementById('progress').style.width = Math.min(progress, 100) + '%'; // Ensure it doesn't exceed 100%
+}
+
+function playClickSound() {
+    const clickSound = document.getElementById('button-click');
+    clickSound.currentTime = 0; // Reset sound to start
+    clickSound.play(); // Play sound
+}
+
+// Handle Answer
+console.log("Selected option:", selectedOption, "Correct answer:", correctAnswer);
+function handleAnswer(selectedOption, correctAnswer, listItem) {
+    const options = document.querySelectorAll('.options li');
+    options.forEach(opt => (opt.onclick = null)); // Disable further clicks
+
+    if (selectedOption === correctAnswer) {
+        score++; // Increment score for correct answer
+        document.getElementById('score').textContent = score;
+        listItem.classList.add('correct');
+
+        // Play correct sound if not muted
+        if (!isMuted) {
+            document.getElementById('correct-sound').play();
+        }
+
+        // Update progress bar only on correct answer
+        updateProgressBar(); // Update progress bar here
+
+        // Check if the progress bar is filled
+        if (score === totalQuestions) { // Check if all questions have been answered correctly
+            clearInterval(timer); // Stop the timer
+            document.querySelector('.quiz-container').style.display = 'none'; // Hide the quiz container
+            document.querySelector('.congratulations').style.display = 'block'; // Show congratulations screen
+            document.getElementById('win-score').textContent = score; // Display final score
+            return; // Exit the function
+        }
+    } else {
+        listItem.classList.add('incorrect');
+        // Show the correct answer
+        document.querySelectorAll('.options li').forEach(li => {
+            if (li.textContent === correctAnswer) li.classList.add('correct');
+        });
+
+        // Play incorrect sound if not muted
+        if (!isMuted) {
+            document.getElementById('incorrect-sound').play();
+        }
+    }
+
+    setTimeout(() => loadQuestion(), 1000); // Load next question after a delay
+}
+
+function removeDuplicates(quizArray) {
+    const uniqueQuestions = [];
+    const questionSet = new Set();
+
+    quizArray.forEach(item => {
+        if (!questionSet.has(item.question)) {
+            uniqueQuestions.push(item);
+            questionSet.add(item.question);
+        }
+    });
+
+    return uniqueQuestions;
+}
+
+function restartQuiz() {
+  playClickSound();
+    // Reset variables
+    score = 0;
+    timeRemaining = 60; // Reset timer
+    questionsAsked = 0; // Reset questions asked count
+
+    // Hide game over screen and show quiz type selection
+    document.querySelector('.game-over').style.display = 'none';
+    document.querySelector('.quiz-type-selection').style.display = 'block';
+
+    // Reset progress bar
+    document.getElementById('progress').style.width = '0%'; // Reset progress bar width
+    document.getElementById('score').textContent = score; // Reset score display
+}
+
+function goHome() {
+  playClickSound();
+    // Hide all sections and show the quiz type selection
+    document.querySelector('.game-over').style.display = 'none';
+    document.querySelector('.congratulations').style.display = 'none'; // Hide congratulations screen
+    document.querySelector('.quiz-container').style.display = 'none';
+    document.querySelector('.quiz-type-selection').style.display = 'block'; // Show quiz type selection
+    document.querySelector('.timer-box').style.display = 'none'; // Hide timer on home screen
+    document.querySelector('.instructions').style.display = 'none'; // Hide instructions when going home
+    document.querySelector('.leaderboard').style.display = 'none'; // Hide leaderboard on home
+    document.querySelector('.score-box').style.display = 'none'; // Hide score box on home screen
+    document.querySelector('.show-instructions').style.display = 'block'; // Show instructions button on home
+    // Remove the game over message if it exists
+    const gameOverMessage = document.querySelector('.game-over-message');
+    if (gameOverMessage) {
+        gameOverMessage.remove();
+    }
+  }
+
+function updateTimerDisplay() {
+    const timerBox = document.getElementById('time-remaining');
+    timerBox.textContent = timeRemaining;
+
+    if (timeRemaining <= 15) {
+        timerBox.style.color = 'red'; // Change color to red when time is low
+    } else if (timeRemaining <= 30) {
+        timerBox.style.color = 'orange'; // Change color to orange for medium time
+    } else {
+        timerBox.style.color = 'green'; // Change color to green for ample time
+    }
+}
+
+// Update this function in your timer interval
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay(); // Call the function to update the timer display
+        if (timeRemaining <= 0) {
+            endQuiz();
+        }
+    }, 1000);
+}
+function updateHighScore() {
+    let highScore = localStorage.getItem('highScore') || 0;
+    if (score > highScore) {
+        localStorage.setItem('highScore', score);
+        alert("New High Score: " + score);
+    }
+    document.getElementById('high-score').textContent = localStorage.getItem('highScore'); // Display high score
+    document.querySelector('.leaderboard').style.display = 'block'; // Show leaderboard
+}
+
+function showInstructions() {
+  playClickSound();
+    document.querySelector('.instructions').style.display = 'block'; // Show instructions
+    document.querySelector('.quiz-type-selection').style.display = 'none'; // Hide quiz type selection
+    document.querySelector('.show-instructions').style.display = 'none'; // Hide the Show Instructions button
+}
+
+// Call this function in your endQuiz function
+function endQuiz() {
+    clearInterval(timer);
+
+    // Play game over sound if not muted
+    if (!isMuted) {
+        document.getElementById('game-over-sound').play();
+    }
+    
+    document.querySelector('.quiz-container').style.display = 'none';
+    document.querySelector('.quiz-type-selection').style.display = 'none'; // Hide quiz type selection
+    document.querySelector('.timer-box').style.display = 'none'; // Hide timer on game over
+    document.querySelector('.score-box').style.display = 'none'; // Hide score box on home screen
+
+    // Show a simple message for the end of the game
+    const gameOverMessage = document.createElement('div');
+    gameOverMessage.className = 'game-over-message';
+    gameOverMessage.innerHTML = `
+        <h2>Time's Up!</h2>
+        <p>Your score: <span id="final-score">${score}</span></p>
+        <button onclick="restartQuiz()">Restart Game</button>
+        <button onclick="goHome()">Home</button>
+    `;
+    
+    document.body.appendChild(gameOverMessage); // Append the message to the body or a specific container
+}
+
+function restartQuiz() {
+  playClickSound();
+    // Reset variables
+    score = 0;
+    timeRemaining = 60; // Reset timer to 60 seconds
+    questionsAsked = 0; // Reset questions asked count
+
+    // Hide game over message if it exists
+    const gameOverMessage = document.querySelector('.game-over-message');
+    if (gameOverMessage) {
+        gameOverMessage.remove();
+    }
+
+    // Hide game over screen and show quiz container
+    document.querySelector('.game-over').style.display = 'none';
+    document.querySelector('.congratulations').style.display = 'none'; // Hide congratulations screen
+    document.querySelector('.quiz-container').style.display = 'block'; // Show quiz container
+
+    // Reset progress bar
+    document.getElementById('progress').style.width = '0%'; // Reset progress bar width
+    document.getElementById('score').textContent = score; // Reset score display
+    document.querySelector('.timer-box').style.display = 'block'; // Show timer when restarting the game
+
+    startTimer(); // Start the timer
+    // Reload the first question
+    loadQuestion();
+}
+
+</script>
+</body>
+</html>
